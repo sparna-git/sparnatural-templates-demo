@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sparnatural</title>
+
+    <!-- ================= CSS (IDENTIQUES AU 1ER FICHIER) ================= -->
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+      crossorigin="anonymous"
+    />
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <!-- YASGUI CSS -->
+    <link
+      href="https://unpkg.com/@triply/yasgui/build/yasgui.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="assets/fa/css/all.min.css" />
+
+    <!-- datepicker -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@chenfengyuan/datepicker@1.0.9/dist/datepicker.min.css"
+    />
+
+    <!-- Sparnatural CSS -->
+    <link rel="stylesheet" href="assets/css/sparnatural.css" />
+    <link rel="stylesheet" href="assets/css/sparnatural-history.css" />
+
+    <!-- ================= STRUCTURE / LAYOUT CSS ================= -->
+    <style>
+      .modal {
+        z-index: 1050 !important; /* valeur doit etre supérieure à celle de l'overlay */
+      }
+      .modal-backdrop {
+        z-index: 1040 !important; /* L'overlay doit avoir un z-index inferieur*/
+      }
+
+      .yasqe .CodeMirror {
+        font-size: 0.8em;
+      }
+
+      #sparnatural-section {
+        padding-top: 40px;
+        height: auto;
+        overflow: visible;
+      }
+
+      #yasqe {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ======= NavBar ======= -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="#">Sparnatural !</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="https://sparnatural.eu"
+                >Sparnatural Home</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="https://github.com/sparna-git/Sparnatural"
+                >Github</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://docs.sparnatural.eu"
+                >Documentation</a
+              >
+            </li>
+            <li class="nav-item" style="margin-left: 500px">
+              <a class="nav-link" href="?lang=fr">fr</a>
+            </li>
+            &nbsp;|&nbsp;
+            <li class="nav-item"><a class="nav-link" href="?lang=en">en</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- ================= MAIN ================= -->
+    <main>
+      <!-- ================= SPARNATURAL ================= -->
+      <section class="container mt-3">
+        <spar-natural
+          src="configs/sparnatural-config-garance.ttl"
+          endpoint="https://sparql.archives-nationales.culture.gouv.fr/garance/sparql"
+          prefixes="skos:http://www.w3.org/2004/02/skos/core# dct:http://purl.org/dc/terms/"
+          lang="fr"
+          defaultLang="fr"
+          distinct="true"
+          debug="true"
+          limit="1000"
+        >
+          <!-- templates poses sur les PropertyShape -->
+          <script
+            id="https://data.mydomain.com/ontologies/sparnatural-config/Place_type_list"
+            type="text/x-handlebars-template"
+          >
+            <div class="custom-item-template">
+              <b>{{#if itemLabel}}{{itemLabel}}{{else}}{{label}}{{/if}}</b>{{#if
+                bindings.count
+              }}
+                <span
+                  class="custom-item-count"
+                >({{bindings.count.value}})</span>{{/if}}
+              <a
+                class="custom-item-link"
+                href="{{term.value}}"
+                target="_blank"
+                rel="noopener"
+                title="{{term.value}}"
+              ></a>
+              {{#if bindings.description}}<br /><small
+                >{{bindings.description.value}}</small>{{/if}}
+            </div>
+          </script>
+
+          <script
+            id="https://data.mydomain.com/ontologies/sparnatural-config/Place_type_tree"
+            type="text/x-handlebars-template"
+          >
+            <div class="custom-item-template">
+              <b>{{label}}</b>
+              <span
+                class="custom-item-link"
+                data-href="{{term.value}}"
+                title="{{term.value}}"
+              ></span>
+              {{#if bindings.description}}<br /><small
+                >{{bindings.description.value}}</small>{{/if}}
+            </div>
+          </script>
+
+          <script
+            id="https://data.mydomain.com/ontologies/sparnatural-config/Place_type_autocomplete"
+            type="text/x-handlebars-template"
+          >
+            <div class="custom-item-template">
+              <b>{{label}}</b>
+              <a
+                class="custom-item-link"
+                href="{{term.value}}"
+                target="_blank"
+                rel="noopener"
+                title="{{term.value}}"
+              ></a>
+              {{#if bindings.description}}<br /><small
+                >{{bindings.description.value}}</small>{{/if}}
+            </div>
+          </script>
+        </spar-natural>
+
+        <style>
+          /* La description doit revenir a la ligne dans la largeur disponible,
+                 et non etendre la liste ou deborder du panneau. */
+          .custom-item-template {
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+          }
+          .custom-item-template small {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: #666;
+            line-height: 1.3;
+          }
+
+          /* Le lien du template, avec sa propre classe : la page ne depend pas des regles
+             de Sparnatural. Masque tant que la ligne n'est pas survolee, opacity et non
+             display pour que la place reste reservee et que le libelle ne se decale pas. */
+          .custom-item-link {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-left: 0.35em;
+            vertical-align: baseline;
+            text-decoration: none;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.12s;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cg fill='none' stroke='%2336c' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8.6 6.9v3.3a.8.8 0 0 1-.8.8H1.8a.8.8 0 0 1-.8-.8V4.2a.8.8 0 0 1 .8-.8h3.3'/%3E%3Cpath d='M7.4 1H11v3.6'/%3E%3Cpath d='M11 1 5.4 6.6'/%3E%3C/g%3E%3C/svg%3E") center / 12px 12px no-repeat;
+          }
+          /* Le :hover couvre la souris, les deux autres classes la ligne mise en avant au
+             clavier. Selecteurs globaux : select2 deplace sa liste deroulante dans le body. */
+          .select2-results__option:hover .custom-item-link,
+          .select2-results__option--highlighted .custom-item-link,
+          .awesomplete > ul > li:hover .custom-item-link,
+          .awesomplete > ul > li[aria-selected="true"] .custom-item-link,
+          .jstree-anchor:hover .custom-item-link,
+          .jstree-hovered .custom-item-link {
+            opacity: 0.7;
+          }
+          /* meme specificite que le bloc ci-dessus : c'est l'ordre qui tranche, garder en dernier */
+          .select2-results__option .custom-item-link:hover,
+          .awesomplete > ul > li .custom-item-link:hover,
+          .jstree-anchor .custom-item-link:hover {
+            opacity: 1;
+          }
+
+          /* Dans l'arbre, le template occupe plusieurs lignes, alors que jstree impose
+             24px de hauteur et interdit le retour a la ligne. */
+          .tree-widget .treeLayer .treeDisplay:has(.custom-item-template) {
+            /* 275px par defaut, trop etroit des qu'il y a une description */
+            min-width: 560px;
+          }
+          .treeDisplay .jstree-anchor:has(.custom-item-template) {
+            display: inline-flex;
+            align-items: flex-start;
+            white-space: normal;
+            height: auto;
+            line-height: 1.3;
+            padding-block: 2px;
+            /* 24px = la fleche de depliage, qui partage la ligne avec l'ancre */
+            max-width: calc(100% - 24px);
+
+            & > .jstree-icon {
+              flex: none;
+            }
+            & .custom-item-template {
+              flex: 1;
+              min-width: 0;
+            }
+          }
+
+          /* Awesomplete s'elargit au contenu et refuse le retour a la ligne */
+          .awesomplete > ul {
+            max-width: 34em;
+          }
+          .awesomplete > ul > li {
+            white-space: normal;
+          }
+        </style>
+
+        <input type="hidden" id="query-json" />
+      </section>
+
+      <!-- ================= ACTION BAR ================= -->
+      <section class="container mt-3">
+        <div class="row">
+          <div class="col-md-6">
+            <span style="font-style: italic; font-size: 0.9em">
+              <a href="#" id="sparql-toggle">
+                <i id="sparql-toggle-icon" class="fad fa-eye fa-fw"></i>
+                <span data-i18n="toggleSparql">Toggle SPARQL</span>
+              </a>
+              &nbsp;|&nbsp;
+              <a href="#" id="share">
+                <i class="fad fa-share-square"></i>
+                <span data-i18n="share">Share</span>
+              </a>
+              &nbsp;|&nbsp;
+              <a href="#" id="export">
+                <i class="fad fa-file-export"></i>
+                <span data-i18n="export">Export</span>
+              </a>
+              &nbsp;|&nbsp;
+              <a href="#" id="import">
+                <i class="fad fa-file-import"></i>
+                <span data-i18n="import">Import</span>
+              </a>
+            </span>
+          </div>
+
+          <div class="col-md-4">
+            <select
+              class="form-control"
+              id="select-examples"
+              style="width: 100%; appearance: auto !important"
+            >
+              <option value="none" selected>
+                <span data-i18n="loadQueryExemple"
+                  >Charger une requête d’exemple…</span
+                >
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-2 text-end">
+            <sparnatural-history lang="fr"> </sparnatural-history>
+
+            <button id="myCustomButton" class="btn btn-primary w-100">
+              <i class="fad fa-history"></i
+              ><span data-i18n="history.title">History</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= YASQE ================= -->
+      <section class="container mt-3">
+        <div id="yasqe"></div>
+      </section>
+
+      <!-- ================= YASR ================= -->
+      <section class="container mb-4">
+        <div id="yasr"></div>
+      </section>
+    </main>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- ================= SHARE MODAL ================= -->
+    <div class="modal fade" id="shareModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span data-i18n="shareModal.title"></span>
+            </h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <p><span data-i18n="shareModal.instructions"></span></p>
+            <a id="share-link" href="#" target="_blank" rel="noopener"></a>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= EXPORT MODAL ================= -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Export JSON</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body" style="overflow: hidden">
+            <textarea
+              id="export-json"
+              class="form-control font-monospace"
+              rows="20"
+              style="width: 100%"
+              readonly
+            ></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= IMPORT MODAL ================= -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Import JSON</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body" style="overflow: hidden">
+            <textarea
+              id="import-json"
+              class="font-monospace"
+              rows="20"
+              style="width: 100%"
+            ></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button id="importButton" class="btn btn-primary">Import</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a
+      href="#"
+      class="back-to-top d-flex align-items-center justify-content-center"
+      ><i class="bi bi-chevron-up"></i
+    ></a>
+
+    <!-- ================= JS (IDENTIQUES AU 1ER FICHIER) ================= -->
+
+    <!-- jQuery (AVANT jquery.i18n) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- jquery.i18n (cdnjs) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.8/jquery.i18n.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.8/jquery.i18n.messagestore.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.8/jquery.i18n.fallbacks.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.8/jquery.i18n.parser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.8/jquery.i18n.emitter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.8/jquery.i18n.language.min.js"></script>
+
+    <!-- i18n -->
+    <script>
+      const lang =
+        new URLSearchParams(window.location.search).get("lang") || "en";
+
+      // sync <html lang>
+      document.documentElement.lang = lang;
+
+      // init jquery i18n
+      $.i18n({ locale: lang });
+
+      $.i18n()
+        .load({
+          en: {
+            "history.title": " History",
+            toggleSparql: "  Toggle SPARQL editor",
+            share: "Share",
+            export: "Export",
+            import: "Import",
+            loadQueryExemple: "Load example query...",
+            "shareModal.instructions":
+              "To share this query, send the following link:",
+            "shareModal.title": "Share Query",
+          },
+          fr: {
+            "history.title": " Historique",
+            toggleSparql: "  Afficher/Masquer éditeur SPARQL",
+            share: "Partager",
+            export: "Exporter la requête",
+            import: "Charger une requête",
+            loadQueryExemple: "Charger une requête d’exemple…",
+            "shareModal.instructions":
+              "Pour partager cette requête, envoyez le lien suivant :",
+            "shareModal.title": "Partage de requête",
+          },
+        })
+        .done(function () {
+          $("body").i18n();
+          console.log("i18n ready, lang =", lang);
+        });
+    </script>
+
+    <!-- anchors -->
+    <script src="https://cdn.jsdelivr.net/npm/anchor-js/anchor.min.js"></script>
+
+    <!-- Bootstrap -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- YASGUI -->
+    <script src="https://unpkg.com/@triply/yasgui/build/yasgui.min.js"></script>
+
+    <!-- Sparnatural -->
+    <script src="assets/js/sparnatural.js"></script>
+    <script src="assets/js/sparnatural-yasgui-plugins.js"></script>
+    <script src="assets/js/sparnatural-history.js"></script>
+    <script src="assets/js/sample-queries.js"></script>
+
+    <!-- JsonUrl (pour share / compress URL) -->
+    <script src="https://cdn.jsdelivr.net/npm/json-url@3.1.0/dist/browser/json-url.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
