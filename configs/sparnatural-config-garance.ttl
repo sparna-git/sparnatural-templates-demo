@@ -84,7 +84,8 @@ this:Place_type_list sh:path rico:hasOrHadPlaceType;
   sh:nodeKind sh:IRI;
   sh:node this:PlaceType;
   dash:searchWidget core:ListProperty;
-  datasources:datasource this:list_placetype_definition .
+  # datasources:datasource this:list_placetype_definition .
+  datasources:datasource this:list_placetype_definition_without_count_nothis .
 
 this:Place_type_autocomplete sh:path rico:hasOrHadPlaceType;
   sh:name "place type (autocomplete)"@en, "type de lieu (autocomplete)"@fr;
@@ -121,8 +122,8 @@ SELECT ?uri ?count ?description (CONCAT(STR(?theLabel), " (", STR(?count), ")") 
   {
     SELECT ?uri ?count ?theLabel WHERE {
       {
-        SELECT DISTINCT ?uri (COUNT(?domain) AS ?count) WHERE {
-          ?domain rdf:type $domain;
+        SELECT DISTINCT ?uri (COUNT(?this) AS ?count) WHERE {
+          ?this rdf:type $domain;
             $property ?uri.
           FILTER(ISIRI(?uri))
         }
@@ -143,11 +144,57 @@ ORDER BY DESC (?count) (UCASE(STR(?label)))
   """;
 .
 
+this:list_placetype_definition_without_count a datasources:SparqlDatasource;
+  datasources:noSort "true"^^xsd:boolean ;
+  datasources:queryString """
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rico: <https://www.ica.org/standards/RiC/ontology#>
+SELECT DISTINCT ?uri ?description (CONCAT(STR(?theLabel), " (xxx)") AS ?label) (STR(?theLabel) AS ?itemLabel) WHERE {
+  
+  ?this rdf:type $domain .
+  ?this $property ?uri.
+
+  ?uri rdf:type rico:PlaceType .
+  FILTER(ISIRI(?uri))
+  ?uri skos:prefLabel ?theLabel.
+  FILTER(((LANG(?theLabel)) = "") || ((LANG(?theLabel)) = $lang))
+
+  OPTIONAL {
+    ?uri skos:definition ?description.
+    FILTER(((LANG(?description)) = "") || ((LANG(?description)) = $lang))
+  }
+}
+ORDER BY (UCASE(STR(?theLabel)))
+  """;
+.
+
+this:list_placetype_definition_without_count_nothis a datasources:SparqlDatasource;
+  datasources:noSort "true"^^xsd:boolean ;
+  datasources:queryString """
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rico: <https://www.ica.org/standards/RiC/ontology#>
+SELECT DISTINCT ?uri ?description (CONCAT(STR(?theLabel), " (xxx)") AS ?label) (STR(?theLabel) AS ?itemLabel) WHERE {
+  ?uri rdf:type rico:PlaceType .
+  FILTER(ISIRI(?uri))
+  ?uri skos:prefLabel ?theLabel.
+  FILTER(((LANG(?theLabel)) = "") || ((LANG(?theLabel)) = $lang))
+
+  OPTIONAL {
+    ?uri skos:definition ?description.
+    FILTER(((LANG(?description)) = "") || ((LANG(?description)) = $lang))
+  }
+}
+ORDER BY (UCASE(STR(?theLabel)))
+  """;
+.
+
 this:search_placetype_definition a datasources:SparqlDatasource;
   datasources:queryString """
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 SELECT DISTINCT ?uri ?label ?description WHERE {
-  ?domain $type $domain;
+  ?this $type $domain;
     $property ?uri.
   ?uri $type $range;
     skos:prefLabel ?label.
@@ -168,9 +215,11 @@ LIMIT 15
 this:tree_root_placetype a datasources:SparqlDatasource;
   datasources:queryString """
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?uri ?label ?description ?hasChildren WHERE {
-  ?uri $type $range;
-    skos:prefLabel ?label.
+PREFIX rico: <https://www.ica.org/standards/RiC/ontology#>
+SELECT DISTINCT ?uri ?label ?description ?hasChildren (COUNT(?this) AS ?count) WHERE {
+
+  ?uri rdf:type rico:PlaceType .
+  ?uri skos:prefLabel ?label.
   FILTER NOT EXISTS { ?parent skos:narrower|^skos:broader ?uri. }
   FILTER(ISIRI(?uri))
   FILTER(((LANG(?label)) = "") || ((LANG(?label)) = $lang))
@@ -180,7 +229,14 @@ SELECT DISTINCT ?uri ?label ?description ?hasChildren WHERE {
     ?uri skos:definition ?description.
     FILTER(((LANG(?description)) = "") || ((LANG(?description)) = $lang))
   }
+
+  # Counts how many time the URI is used as value in the criteria build in Sparnatural
+  OPTIONAL {
+    ?this rdf:type $domain .
+    ?this $property ?uri.
+  }
 }
+GROUP BY ?uri ?label ?description ?hasChildren
 ORDER BY (UCASE(STR(?label)))
   """;
 .
@@ -188,7 +244,10 @@ ORDER BY (UCASE(STR(?label)))
 this:tree_children_placetype a datasources:SparqlDatasource;
   datasources:queryString """
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?uri ?label ?description ?hasChildren WHERE {
+PREFIX rico: <https://www.ica.org/standards/RiC/ontology#>
+SELECT DISTINCT ?uri ?label ?description ?hasChildren (COUNT(?this) AS ?count) WHERE {
+
+
   $node skos:narrower|^skos:broader ?uri.
   ?uri skos:prefLabel ?label.
   FILTER(ISIRI(?uri))
@@ -199,7 +258,14 @@ SELECT DISTINCT ?uri ?label ?description ?hasChildren WHERE {
     ?uri skos:definition ?description.
     FILTER(((LANG(?description)) = "") || ((LANG(?description)) = $lang))
   }
+
+  # Counts how many time the URI is used as value in the criteria build in Sparnatural
+  OPTIONAL {
+    ?this rdf:type $domain .
+    ?this $property ?uri.
+  }
 }
+GROUP BY ?uri ?label ?description ?hasChildren
 ORDER BY (UCASE(STR(?label)))
   """;
 .
