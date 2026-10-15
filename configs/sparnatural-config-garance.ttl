@@ -85,7 +85,7 @@ this:Place_type_list sh:path rico:hasOrHadPlaceType;
   sh:node this:PlaceType;
   dash:searchWidget core:ListProperty;
   # datasources:datasource this:list_placetype_definition .
-  datasources:datasource this:list_placetype_definition_without_count_nothis .
+  datasources:datasource this:list_placetype_definition_without_count .
 
 this:Place_type_autocomplete sh:path rico:hasOrHadPlaceType;
   sh:name "place type (autocomplete)"@en, "type de lieu (autocomplete)"@fr;
