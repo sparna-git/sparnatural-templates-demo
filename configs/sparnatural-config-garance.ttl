@@ -71,6 +71,8 @@ this:Place_type_list_default sh:path rico:hasOrHadPlaceType;
   sh:node this:PlaceType;
   dash:searchWidget core:ListProperty;
   datasources:datasource <http://data.sparna.fr/ontologies/sparnatural-config-datasources#list_skospreflabel_alpha> .
+  # datasources:datasource this:list_skospreflabel_alpha_defaultLang .
+  # datasources:datasource <http://data.sparna.fr/ontologies/sparnatural-config-datasources#list_URI_or_literal_alpha> .
 
 this:Place_type_autocomplete_default sh:path rico:hasOrHadPlaceType;
   sh:name "place type (autocomplete - class template)"@en, "type de lieu (autocomplete - class template)"@fr;
@@ -138,16 +140,39 @@ SELECT ?uri ?count ?description (CONCAT(STR(?theLabel), " (", STR(?count), ")") 
         }
         GROUP BY ?uri
       }
-      ?uri skos:prefLabel ?theLabel.
-      FILTER(((LANG(?theLabel)) = "") || ((LANG(?theLabel)) = $lang))
+      OPTIONAL {
+        ?uri skos:prefLabel ?theLabel1.
+        FILTER(LANG(?theLabel1) = $lang)
+      }
+      OPTIONAL {
+        ?uri skos:prefLabel ?theLabel2.
+        FILTER(LANG(?theLabel2) = $defaultLang)
+      }
+      OPTIONAL {
+        ?uri skos:prefLabel ?theLabel3.
+        FILTER(LANG(?theLabel3) = "")
+      }
+      BIND(COALESCE(?theLabel1,?theLabel2,?theLabel3, "") AS ?theLabel)
+      
     }
     ORDER BY DESC (?count) (UCASE(?theLabel))
     LIMIT 500
   }
+
   OPTIONAL {
-    ?uri skos:definition ?description.
-    FILTER(((LANG(?description)) = "") || ((LANG(?description)) = $lang))
+    ?uri skos:definition ?description1.
+    FILTER(LANG(?description1) = $lang)
   }
+  OPTIONAL {
+    ?uri skos:definition ?description2.
+    FILTER(LANG(?description2) = $defaultLang)
+  }
+  OPTIONAL {
+    ?uri skos:definition ?description3.
+    FILTER(LANG(?description3) = "")
+  }
+  BIND(COALESCE(?description1,?description2,?tdescription3) AS ?description)
+
 }
 ORDER BY DESC (?count) (UCASE(STR(?label)))
   """;
