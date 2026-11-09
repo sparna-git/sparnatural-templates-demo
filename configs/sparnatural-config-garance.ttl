@@ -33,31 +33,29 @@
 
 <https://data.mydomain.com/ontologies/sparnatural-config> a owl:Ontology .
 
+
+# Place and properties
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 this:Place a sh:NodeShape;
   sh:targetClass rico:Place;
   sh:nodeKind sh:IRI;
   rdfs:label "Place"@en, "Lieu"@fr;
-  sh:property this:Place_prefLabel, this:Place_type_list, this:Place_type_autocomplete, this:Place_type_tree, this:Place_type_tree_rec, this:Place_type_list_default, this:Place_type_autocomplete_default, this:Place_type_tree_default, this:isOrWasContainedBy_autocomplete_default .
-
-this:PlaceType a sh:NodeShape;
-  sh:targetClass rico:PlaceType;
-  sh:nodeKind sh:IRI;
-  rdfs:label "Place Type"@en, "Type de Lieu"@fr ;
-  sh:property this:PlaceType_prefLabel.
-
-this:Place_prefLabel sh:path skos:prefLabel;
-  sh:name "pref label"@en, "libellé préférentiel"@fr;
-  sh:nodeKind sh:Literal ;
-  dash:propertyRole dash:LabelRole ;
-  sh:datatype rdf:langString .
-
-this:PlaceType_prefLabel sh:path skos:prefLabel;
-  sh:name "pref label"@en, "libellé préférentiel"@fr;
-  sh:nodeKind sh:Literal ;
-  sh:datatype rdf:langString .
+  sh:property 
+    this:Place_prefLabel,
+    this:Place_type_list,
+    this:Place_type_autocomplete,
+    this:Place_type_tree,
+    this:Place_type_tree_rec,
+    this:Place_type_list_default,
+    this:Place_type_autocomplete_default,
+    this:Place_type_tree_default,
+    this:Place_isOrWasContainedBy_autocomplete_default,
+    this:Place_isOrWasAffectedBy
+.
 
 
-this:isOrWasContainedBy_autocomplete_default sh:path rico:isOrWasContainedBy;
+this:Place_isOrWasContainedBy_autocomplete_default sh:path rico:isOrWasContainedBy;
   sh:name "était contenu dans (default autocomplete)"@fr, "is or was contained by (default autocomplete)"@fr;
   sh:nodeKind sh:IRI;
   sh:node this:Place;
@@ -120,6 +118,77 @@ this:Place_type_tree_default sh:path rico:hasOrHadPlaceType;
   dash:searchWidget core:TreeProperty;
   datasources:treeRootsDatasource this:tree_root_placetype;
   datasources:treeChildrenDatasource <http://data.sparna.fr/ontologies/sparnatural-config-datasources#tree_children_skosnarrower> .
+
+this:Place_isOrWasAffectedBy sh:path rico:isOrWasAffectedBy;
+  sh:name "affected by event"@en, "affecté par"@fr;
+  sh:nodeKind sh:IRI;
+  sh:node this:Event;
+  dash:searchWidget core:NonSelectableProperty .
+
+this:Place_isOrWasAffectedBy sh:path rico:hasExtent;
+  sh:name "has extent"@en, "a pour dimension"@fr;
+  sh:nodeKind sh:IRI;
+  sh:node this:Extent;
+  dash:searchWidget core:NonSelectableProperty .
+
+
+# PlaceType and properties
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+this:PlaceType a sh:NodeShape;
+  sh:targetClass rico:PlaceType;
+  sh:nodeKind sh:IRI;
+  rdfs:label "Place Type"@en, "Type de Lieu"@fr ;
+  sh:property this:PlaceType_prefLabel.
+
+this:Place_prefLabel sh:path skos:prefLabel;
+  sh:name "pref label"@en, "libellé préférentiel"@fr;
+  sh:nodeKind sh:Literal ;
+  dash:propertyRole dash:LabelRole ;
+  sh:datatype rdf:langString .
+
+this:PlaceType_prefLabel sh:path skos:prefLabel;
+  sh:name "pref label"@en, "libellé préférentiel"@fr;
+  sh:nodeKind sh:Literal ;
+  sh:datatype rdf:langString .
+
+
+# Events and properties
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+this:Event a sh:NodeShape;
+  sh:deactivated true;
+  sh:nodeKind sh:IRI;
+  rdfs:label "Event"@en, "Evénement"@fr;
+  sh:property this:Event_date .
+
+
+this:Event_date sh:path rico:date;
+  sh:name "date"@en, "date"@fr;
+  sh:nodeKind sh:Literal ;
+  sh:datatype xsd:date .
+
+# Extent and properties
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+this:Extent a sh:NodeShape;
+  sh:deactivated true;
+  sh:nodeKind sh:IRI;
+  rdfs:label "Extent"@en, "Dimension"@fr;
+  sh:property this:Extent_quantity, this:Extent_type .
+
+
+this:Extent_quantity sh:path rico:date;
+  sh:name "quantity"@en, "quantité"@fr;
+  sh:nodeKind sh:Literal ;
+  sh:datatype xsd:decimal .
+
+this:Extent_type sh:path rico:type;
+  sh:name "type/unit"@en, "type/unité"@fr;
+  sh:nodeKind sh:Literal ;
+  sh:datatype xsd:string .
+
+
 
 # Les quatre datasources ci-dessous lisent skos:definition en plus du libelle,
 # pour que la definition s'affiche sous le libelle dans les trois widgets.
